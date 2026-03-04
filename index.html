@@ -97,7 +97,7 @@
   <div class="title-bar">
     <h1>3 ŞERİT KAÇIŞ</h1>
     <p class="desktop-hint">← → Şerit · ↑↓ Hız · P Duraklat · R Yeniden</p>
-    <p class="touch-hint" style="display:none;">Sol/Sağ butonları veya ekranın sol/sağını kullan</p>
+    <p class="touch-hint" style="display:none;">Parmakla sağa/sola kaydır · Hız için + −</p>
   </div>
   <div class="game-wrap">
     <canvas id="gameCanvas" width="420" height="640"></canvas>
@@ -109,6 +109,7 @@
     <button type="button" class="touch-btn wide" id="btnPause" aria-label="Duraklat">P</button>
     <button type="button" class="touch-btn" id="btnSpeedUp" aria-label="Hızlan">+</button>
     <button type="button" class="touch-btn" id="btnRight" aria-label="Sağ">SAĞ</button>
+    <button type="button" class="touch-btn" id="btnRestart" aria-label="Yeniden başlat">R</button>
   </div>
 
   <script>
@@ -277,29 +278,40 @@
       document.getElementById('touchControls').classList.add('show');
     }
 
+    let swipeStartX = null;
+    let swipeTouchId = null;
+    const SWIPE_THRESHOLD = 40;
+
     canvas.addEventListener('touchstart', e => {
       if (e.changedTouches.length === 0) return;
       const t = e.changedTouches[0];
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const x = (t.clientX - rect.left) * scaleX;
-      const third = canvas.width / 3;
+      swipeStartX = t.clientX;
+      swipeTouchId = t.identifier;
+    }, { passive: true });
+
+    canvas.addEventListener('touchmove', e => {
+      if (gameState === STATE.PLAYING) e.preventDefault();
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', e => {
+      if (e.changedTouches.length === 0 || swipeStartX === null) return;
+      const t = Array.from(e.changedTouches).find(tc => tc.identifier === swipeTouchId);
+      if (!t) return;
+      const deltaX = t.clientX - swipeStartX;
       if (gameState === STATE.PLAYING && !player.gameOver) {
-        if (x < third && player.lane > 0) {
+        if (deltaX < -SWIPE_THRESHOLD && player.lane > 0) {
           player.lane--;
           player.targetX = LANE_CENTERS[player.lane];
           playLaneChange();
-          e.preventDefault();
-        } else if (x > canvas.width - third && player.lane < 2) {
+        } else if (deltaX > SWIPE_THRESHOLD && player.lane < 2) {
           player.lane++;
           player.targetX = LANE_CENTERS[player.lane];
           playLaneChange();
-          e.preventDefault();
         }
       }
-    }, { passive: false });
-
-    canvas.addEventListener('touchmove', e => { if (gameState === STATE.PLAYING) e.preventDefault(); }, { passive: false });
+      swipeStartX = null;
+      swipeTouchId = null;
+    }, { passive: true });
     canvas.addEventListener('contextmenu', e => e.preventDefault());
 
     function bindTouchBtn(id, onDown, onUp) {
@@ -318,6 +330,14 @@
     document.getElementById('btnPause').addEventListener('touchend', e => { e.preventDefault(); togglePause(); });
     document.getElementById('btnEnter').addEventListener('click', doEnter);
     document.getElementById('btnEnter').addEventListener('touchend', e => { e.preventDefault(); doEnter(); });
+    document.getElementById('btnRestart').addEventListener('click', doRestart);
+    document.getElementById('btnRestart').addEventListener('touchend', e => { e.preventDefault(); doRestart(); });
+
+    function doRestart() {
+      if (gameState === STATE.GAME_OVER) {
+        resetGame();
+      }
+    }
 
     function doLaneLeft() {
       if (gameState !== STATE.PLAYING || player.gameOver || player.lane <= 0) return;
