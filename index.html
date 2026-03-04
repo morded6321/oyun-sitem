@@ -89,6 +89,7 @@
     }
     .touch-btn:active { background: rgba(255,217,61,0.25); }
     .touch-btn.wide { width: 70px; border-radius: 12px; }
+    .touch-btn.enter-btn { width: 100%; max-width: 200px; border-radius: 12px; font-size: 16px; order: -1; margin-bottom: 4px; }
     body.touch-device .game-wrap { padding-bottom: 72px; }
   </style>
 </head>
@@ -102,6 +103,7 @@
     <canvas id="gameCanvas" width="420" height="640"></canvas>
   </div>
   <div class="touch-controls" id="touchControls">
+    <button type="button" class="touch-btn enter-btn" id="btnEnter" aria-label="Enter">ENTER</button>
     <button type="button" class="touch-btn" id="btnLeft" aria-label="Sol">SOL</button>
     <button type="button" class="touch-btn" id="btnSpeedDown" aria-label="Yavaşla">−</button>
     <button type="button" class="touch-btn wide" id="btnPause" aria-label="Duraklat">P</button>
@@ -314,6 +316,8 @@
     bindTouchBtn('btnSpeedDown', () => { keys['ArrowDown'] = true; }, () => { keys['ArrowDown'] = false; });
     document.getElementById('btnPause').addEventListener('click', togglePause);
     document.getElementById('btnPause').addEventListener('touchend', e => { e.preventDefault(); togglePause(); });
+    document.getElementById('btnEnter').addEventListener('click', doEnter);
+    document.getElementById('btnEnter').addEventListener('touchend', e => { e.preventDefault(); doEnter(); });
 
     function doLaneLeft() {
       if (gameState !== STATE.PLAYING || player.gameOver || player.lane <= 0) return;
@@ -330,6 +334,21 @@
     function togglePause() {
       if (gameState === STATE.PLAYING) gameState = STATE.PAUSED;
       else if (gameState === STATE.PAUSED) gameState = STATE.PLAYING;
+    }
+    function doEnter() {
+      if (gameState === STATE.LEVEL_COMPLETE) {
+        if (currentLevel < LEVELS.length && currentLevel + 1 <= unlockedLevel) {
+          startGame(currentLevel + 1);
+          resetGame();
+        } else {
+          gameState = STATE.MENU;
+        }
+        return;
+      }
+      if (gameState === STATE.MENU && menuSelectedLevel + 1 <= unlockedLevel) {
+        startGame(menuSelectedLevel + 1);
+        resetGame();
+      }
     }
 
     function initAudio() {
