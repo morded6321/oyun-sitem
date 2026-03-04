@@ -90,10 +90,31 @@
     .touch-btn:active { background: rgba(255,217,61,0.25); }
     .touch-btn.wide { width: 70px; border-radius: 12px; }
     .touch-btn.enter-btn { width: 100%; max-width: 200px; border-radius: 12px; font-size: 16px; order: -1; margin-bottom: 4px; }
+    body.touch-device #btnLeft,
+    body.touch-device #btnRight { display: none !important; }
     body.touch-device .game-wrap { padding-bottom: 72px; }
+    .btn-refresh {
+      position: fixed;
+      top: max(10px, env(safe-area-inset-top));
+      left: max(10px, env(safe-area-inset-left));
+      z-index: 20;
+      padding: 8px 12px;
+      border: 2px solid rgba(255,217,61,0.5);
+      border-radius: 8px;
+      background: rgba(0,0,0,0.6);
+      color: #ffd93d;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .btn-refresh:active { background: rgba(255,217,61,0.2); }
   </style>
 </head>
 <body>
+  <button type="button" class="btn-refresh" id="btnRefresh" aria-label="Sayfayı yenile">Yenile</button>
   <div class="title-bar">
     <h1>3 ŞERİT KAÇIŞ</h1>
     <p class="desktop-hint">← → Şerit · ↑↓ Hız · P Duraklat · R Yeniden</p>
@@ -176,7 +197,7 @@
     const ACCEL = 0.07;
     const DECEL = 0.05;
     const COLLISION_MARGIN = 18;
-    const LANE_CHANGE_SPEED = 0.14;
+    const LANE_CHANGE_SPEED = 0.26;
     const BASE_SPAWN_GAP = 62;
     const MIN_SPAWN_GAP = 32;
     const MIN_VERTICAL_GAP = 88;
@@ -280,7 +301,7 @@
 
     let swipeStartX = null;
     let swipeTouchId = null;
-    const SWIPE_THRESHOLD = 40;
+    const SWIPE_THRESHOLD = 22;
 
     canvas.addEventListener('touchstart', e => {
       if (e.changedTouches.length === 0) return;
@@ -332,6 +353,8 @@
     document.getElementById('btnEnter').addEventListener('touchend', e => { e.preventDefault(); doEnter(); });
     document.getElementById('btnRestart').addEventListener('click', doRestart);
     document.getElementById('btnRestart').addEventListener('touchend', e => { e.preventDefault(); doRestart(); });
+    document.getElementById('btnRefresh').addEventListener('click', () => location.reload());
+    document.getElementById('btnRefresh').addEventListener('touchend', e => { e.preventDefault(); location.reload(); });
 
     function doRestart() {
       if (gameState === STATE.GAME_OVER) {
