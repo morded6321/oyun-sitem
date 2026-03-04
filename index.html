@@ -197,7 +197,7 @@
     const ACCEL = 0.07;
     const DECEL = 0.05;
     const COLLISION_MARGIN = 18;
-    const LANE_CHANGE_SPEED = 0.26;
+    const LANE_CHANGE_SPEED = 0.38;
     const BASE_SPAWN_GAP = 62;
     const MIN_SPAWN_GAP = 32;
     const MIN_VERTICAL_GAP = 88;
@@ -301,7 +301,7 @@
 
     let swipeStartX = null;
     let swipeTouchId = null;
-    const SWIPE_THRESHOLD = 22;
+    const SWIPE_THRESHOLD = 14;
 
     canvas.addEventListener('touchstart', e => {
       if (e.changedTouches.length === 0) return;
